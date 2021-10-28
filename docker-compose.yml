@@ -1,0 +1,19 @@
+version: '3.3'
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - '9006:80'
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 'changeme'
+      MYSQL_DATABASE: 'classchat'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'changeme'
+  app:
+    build: .
+    environment:
+      WAIT_HOSTS: mysql:3306
+      DB_USERNAME: 'sqluser'
+      DB_PASSWORD: 'changeme'
