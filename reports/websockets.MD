@@ -18,9 +18,10 @@ This library provides a simple, usable framework for building a websocket server
 * The protocol waits for a valid handshake request, which is determined by reading the raw bytes and attempting to convert into a HTTP request using the `read_http_request` function.
 * The proper HTTP handshake response is validated and processed by `handshake`, which after reading the HTTP request builds the response using `build_response` and writes it back to the client through `write_http_response`.
 
-### Sending/Recieving Frames
+### Sending Frames:
 * WebSocketServerProtocol recieves incoming bytes through its `recv` coroutine, which it inherits from WebSocketCommonProtocol.
 * What the callback function instantiated through serve does can vary, but to send a socket, the `send` coroutine is called.
+* To send a frame to several clients, the `broadcast` is used, which takes a list of WebSocketServerProtocols, and the message to broadcast.
 
 ### Relevant files
 * [server.py](https://github.com/aaugustin/websockets/blob/13eff12/src/websockets/legacy/server.py#L826-L1048)
