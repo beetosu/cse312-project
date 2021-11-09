@@ -25,6 +25,7 @@ async def send_message(websocket, path):
         # Unregister user
         CONNECTIONS[path].remove(websocket)
 
+
 async def main():
     async with websockets.serve(send_message, "localhost", 8001):
         await asyncio.Future()  # run forever
