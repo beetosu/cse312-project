@@ -1,0 +1,49 @@
+{
+    "GET": {
+        "/": {
+            "code": "200 OK",
+            "type": "text/html",
+            "path": "./HTML Pages/Homepage.html",
+            "headers": {}
+        },
+        "/Homepage.css": {
+            "code": "200 OK",
+            "type": "text/css",
+            "path": "./HTML Pages/Homepage.css",
+            "headers": {}
+        },
+        "/profile": {
+            "code": "200 OK",
+            "type": "text/html",
+            "path": "./HTML Pages/Profile.html",
+            "headers": {}
+        },
+        "/Profile.css": {
+            "code": "200 OK",
+            "type": "text/css",
+            "path": "./HTML Pages/Profile.css",
+            "headers": {}
+        },
+        "/register": {
+            "code": "200 OK",
+            "type": "text/html",
+            "path": "./HTML Pages/Registration.html",
+            "headers": {}
+        },
+        "/Registration.css": {
+            "code": "200 OK",
+            "type": "text/css",
+            "path": "./HTML Pages/Registration.css",
+            "headers": {}
+        },
+        "/test": {
+            "code": "200 OK",
+            "type": "text/html",
+            "path": "./websockets-test.html",
+            "headers": {}
+        }
+    },
+    "POST": {
+        
+    }
+}

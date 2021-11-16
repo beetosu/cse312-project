@@ -1,6 +1,7 @@
 import socketserver
 from os import listdir
 from secrets import token_hex
+import json
 
 def preventInjection(text):
     return text.replace("&","&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -133,14 +134,8 @@ def build_response(reqObj):
         "headers": any other headers, in key-value format.
     }
 ''' 
-valid_requests = {
-    "GET": {
-        
-    },
-    "POST": {
-        
-    }
-}
+with open('requests.json') as f:
+    valid_requests = json.load(f)
 
 # The generic 404 error response object.
 not_found_response = {
@@ -173,5 +168,5 @@ class TCPRequestHandler(socketserver.StreamRequestHandler):
         self.wfile.write(res)
 
 server = socketserver.TCPServer(("0.0.0.0", 8000), TCPRequestHandler)
-print("server running @ localhost:8000")
+print("server running @ http://localhost:8000")
 server.serve_forever()
