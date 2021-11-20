@@ -4,6 +4,8 @@ from secrets import token_hex
 import json
 from modify import modify_request, modify_response
 
+xsrf_tokens = []
+
 def preventInjection(text):
     return text.replace("&","&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -85,6 +87,10 @@ def handle_queries(queries, path, type):
     Parses through an html template to produce a usable html file
 '''
 def parse_template(html, queries):
+    if b'{{token}}' in html:
+        token = token_hex(16)
+        xsrf_tokens.append(token)
+        html = html.replace(b'{{token}}', bytes(token, 'utf-8'))
     return html
 
 
@@ -111,12 +117,14 @@ def build_response(reqObj):
     for k, v in response["headers"].items():
         resObj["headers"][k] = v
     
+    print(resObj)
+
     if "body" in response.keys():
         resObj["headers"]["Content-Length"] = len(response["body"])
         resObj["body"] = bytes(response["body"], 'UTF-8')
     else:
         file = open(response["path"], 'rb').read()
-        if resObj["headers"]["Content-Type"] == 'text/html':
+        if resObj["headers"]["Content-Type"] in 'text/html':
             resObj["body"] = parse_template(file, reqObj["queries"])
         else:
             resObj["body"] = file
@@ -153,8 +161,6 @@ forbidden_response = {
     "body": "The content you are attempting to access is forbidden.",
     "headers": {}
 }
-
-xsrf_tokens = []
 
 # Calls the functions to handle/send requests/responses.
 class TCPRequestHandler(socketserver.StreamRequestHandler):

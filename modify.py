@@ -4,7 +4,7 @@ xsrf_tokens = []
 
 def modify_request(reqObj):
     if reqObj['path'] == "/register":
-        # do something
+        print(reqObj)
         pass
     elif reqObj['path'] == "/login":
         # do something
