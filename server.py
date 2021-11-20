@@ -2,6 +2,7 @@ import socketserver
 from os import listdir
 from secrets import token_hex
 import json
+from modify import modify_request, modify_response
 
 def preventInjection(text):
     return text.replace("&","&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -104,7 +105,8 @@ def build_response(reqObj):
         "headers": {
             "Content-Type": response["type"],
             "X-Content-Type-Options": "nosniff",
-        }
+        },
+        "path": reqObj.get("path", '/error')
     }
     for k, v in response["headers"].items():
         resObj["headers"][k] = v
@@ -158,7 +160,10 @@ xsrf_tokens = []
 class TCPRequestHandler(socketserver.StreamRequestHandler):
     def handle(self):
         reqObj = parse_request(self.rfile)
+        reqObj = modify_request(reqObj)
+
         resObj = build_response(reqObj)
+        resObj = modify_response(resObj)
 
         res = bytes(f'{resObj["head"]}\r\n', "ascii")
         for k, v in resObj["headers"].items():
