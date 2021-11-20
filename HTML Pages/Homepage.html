@@ -7,19 +7,15 @@
     </head>
 <body>
 <div class="container">
-    <form action="#">
+    <form action="/login" method="post" id="login-form" enctype="multipart/form-data">
         <div class="title" style="color: #0e4bf1; text-align: center">Welcome to our App</div>
         <div class="center_text" style="color: #0e4bf1; text-align: center">Sign in to your account</div>
         <div class="input-box underline">
-            <label>
-                <input type="text" placeholder="Username" required>
-            </label>
+            <input type="text" placeholder="Username" name="username" required>
             <div class="underline"></div>
         </div>
         <div class="input-box">
-            <label>
-                <input type="password" placeholder="Password" required>
-            </label>
+            <input type="password" placeholder="Password" name="password" required>
             <div class="underline"></div>
         </div>
         <div class="input-box button">

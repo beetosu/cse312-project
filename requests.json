@@ -44,6 +44,21 @@
         }
     },
     "POST": {
-        
+        "/register": {
+            "code": "301 Redirect",
+            "type": "text/html",
+            "body": "",
+            "headers": {
+                "location": "/"
+            }
+        },
+        "/login": {
+            "code": "301 Redirect",
+            "type": "text/html",
+            "body": "",
+            "headers": {
+                "location": "/profile"
+            }
+        }
     }
 }
