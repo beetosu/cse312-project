@@ -9,6 +9,7 @@
 <div class="registration">
     <h2 style="color: #0e4bf1; text-align: center">Registration</h2>
     <form action="/register" method="post" id="registration-form" enctype="multipart/form-data">
+        <input value="{{token}}" name="xsrf_token" hidden>
         <div class="input-box">
             <label>
                 <input type="text" name="username" placeholder="Enter Username" required>
