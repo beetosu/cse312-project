@@ -174,6 +174,8 @@ class TCPRequestHandler(socketserver.StreamRequestHandler):
         res = bytes(f'{resObj["head"]}\r\n', "ascii")
         for k, v in resObj["headers"].items():
             res += bytes(f'{k}: {v}\r\n', "ascii")
+        for cookie in resObj.get("cookies", []):
+            res += bytes(f'Set-Cookie: {cookie["name"]}={cookie["value"]}; Max-Age={cookie["max-age"]}; HttpOnly\r\n', 'ascii')
         res += bytes("\r\n", "ascii")
         res += resObj["body"]
         self.wfile.write(res)
