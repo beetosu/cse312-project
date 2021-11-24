@@ -25,6 +25,22 @@ function sendMessage() {
    }
 }
 
+
+//Fetch get requests and getting the channel get the user1 and user2 authenticate user1 cookie and token 
+
+//CHeck out fetch documentation Sent api request to python server 
+
+//Authenticate user 1 and and get the channel between the two
+
+//DO 2 thero
+
+
+
+fetch('/users')
+   .then(data=>{
+
+   })
+
 // Called when the server sends a new message over the WebSocket and renders that message so the user can read it
 function addMessage(message) {
    const chatMessage = JSON.parse(message.data);
