@@ -1,6 +1,6 @@
 {
     "GET": {
-        "/": {
+        "/login": {
             "code": "200 OK",
             "type": "text/html",
             "path": "./HTML Pages/Homepage.html",
@@ -24,7 +24,7 @@
             "path": "./HTML Pages/Profile.css",
             "headers": {}
         },
-        "/register": {
+        "/": {
             "code": "200 OK",
             "type": "text/html",
             "path": "./HTML Pages/Registration.html",
