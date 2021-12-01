@@ -1,9 +1,5 @@
 version: '3.3'
 services:
-  nginx:
-    build: ./nginx
-    ports:
-      - '9006:80'
   mysql:
     image: mysql:5.7
     environment:
@@ -15,5 +11,7 @@ services:
     build: .
     environment:
       WAIT_HOSTS: mysql:3306
-      DB_USERNAME: 'sqluser'
+      DB_USERNAME: 'user'
       DB_PASSWORD: 'changeme'
+    ports:
+      - '8080:8000'
