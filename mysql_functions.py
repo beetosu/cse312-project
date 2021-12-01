@@ -1,5 +1,10 @@
 # This file will contain any functions needed to add/update/retrieve
 # data from the database.
+import mysql.connector
+
+dbuser = 'root'
+dbpw = 'changeme'
+dbname = 'classchat'
 
 '''
 Creating userData table
@@ -42,8 +47,11 @@ WHERE LoggedIn = TRUE
 ""
 
  '''
-import mysql.connector
 
-connection = mysql.connector.connect(user='root', password='changeme', database='classchat')
-
-connection.close()
+def db_init():
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname)
+    cursor = connection.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS userData (id INT AUTO_INCREMENT PRIMARY KEY, username TEXT, password TEXT, FirstName TEXT, LastName TEXT, ProfilePictureUrl TEXT, LoggedIn BOOLEAN)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS messageData (id INT AUTO_INCREMENT PRIMARY KEY, channel TEXT, message TEXT, sender TEXT, recipient TEXT)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS userTokens (id INT AUTO_INCREMENT PRIMARY KEY, username TEXT, token TEXT)")
+    connection.close()
