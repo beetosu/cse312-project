@@ -73,3 +73,17 @@ def db_check_user_exists(username: str) -> bool:
     # Otherwise return False
     connection.close()
     return False
+
+def db_insert_user(username: str, password: str, firstName: str, lastName: str, profilePictureUrl: str) -> bool
+    # Inserts a user into userData. Returns True if successful, 
+    # False if username is taken.
+if not db_check_user_exists(username):
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlInsertion = "INSERT INTO userData (username, password, FirstName, LastName, ProfilePictureUrl, LoggedIn) VALUES (%s, %s, %s, %s, %s, %s)"
+    sqlPrepareValues = (username, password, firstName, lastName, profilePictureUrl, False)
+    cursor.execute(sqlInsertion, sqlPrepareValues)
+    connection.commit()
+    connection.close()
+    return True
+return False
