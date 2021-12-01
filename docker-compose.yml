@@ -15,3 +15,13 @@ services:
       DB_PASSWORD: 'changeme'
     ports:
       - '8080:8000'
+  websockets:
+    build:
+      context: .
+      dockerfile: websockets.Dockerfile
+    environment:
+      WAIT_HOSTS: mysql:3306
+      DB_USERNAME: 'user'
+      DB_PASSWORD: 'changeme'
+    ports:
+      - '8001:8001'

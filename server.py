@@ -162,10 +162,6 @@ forbidden_response = {
     "headers": {}
 }
 
-import mysql.connector
-
-connection = mysql.connector.connect(user='user', password='changeme', database='classchat', host="mysql")
-
 # Calls the functions to handle/send requests/responses.
 class TCPRequestHandler(socketserver.StreamRequestHandler):
     def handle(self):
