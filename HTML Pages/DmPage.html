@@ -6,7 +6,9 @@
     <link rel="stylesheet" href="DmPage.css">
     <script>
 
-        const socket = new WebSocket('ws://localhost' + {{socketName}} + '/websocket');
+        const socket = new WebSocket('ws://localhost:8001/' + {{socketName}});
+
+        socket.onmessage = addMessage;
 
         document.addEventListener("keypress", function (event) {
             if (event.code === "Enter") {
@@ -25,10 +27,16 @@
                 //Output on the socket to the dm pag
 
                 //Get logged in user
-                socket.send(JSON.stringify({'sender' : {{sender}} ,'comment': comment}));
+                socket.send(JSON.stringify({'sender' : {{username}} ,'comment': comment}));
 
                 //Send data to mysql database
             }
+        }
+
+        function addMessage(message) {
+            const chatMessage = JSON.parse(message.data);
+            let chat = document.getElementById('chat');
+            chat.innerHTML += "<b>" + {{username}} + "</b>: " + chatMessage["comment"] + "<br/>";
         }
     </script>
     </head>
