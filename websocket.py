@@ -22,7 +22,8 @@ async def send_message(websocket, path):
             message = json.loads(rawMessage)
             if message.get('sender', 'not in this') in path:
                 recieverPath = path.replace(message['sender'], '')
-                websockets.broadcast(CONNECTIONS[recieverPath], rawMessage)
+                if recieverPath in CONNECTIONS:
+                    websockets.broadcast(CONNECTIONS[recieverPath], rawMessage)
             websockets.broadcast(CONNECTIONS[path], rawMessage)
     finally:
         # Unregister user
