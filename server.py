@@ -251,6 +251,8 @@ def fix_response(reqObj, resObj):
             userElement += bytes(f'<p class="contact-name">{user["username"]}</p>', 'ascii')
             userElement += bytes(f'<p class="Login">{status}</p></li></div><hr>', 'ascii')
         resObj['body'] = resObj['body'].replace(b'{{users}}', userElement)
+        user = "Tom" # verify token and get username here
+        resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(f"'{user}'", 'ascii'))
     elif reqObj['path'] == '/dm':
         recipiant = reqObj['queries'].get('user')
         if recipiant is None:
