@@ -22,24 +22,11 @@ html, body{
     box-shadow: 0 10px 10px rgba(0, 0, 0, 0.15);
     top: -400px;
 }
-
-.container form .title{
-    font-size: 30px;
-    font-weight: 600;
-    margin: 20px 0 10px 0;
-    position: relative;
-
-    width: 300px;
-    height: 300px;
-}
 .container-title{
     font-size: 30px;
     font-weight: 600;
     margin: 20px 0 10px 0;
     position: relative;
-    top: 240px;
-    width: 300px;
-    height: 300px;
 }
 
 .container form .input-box{
@@ -71,24 +58,24 @@ html, body{
     margin: 50px 0 20px 0;
 }
 
-.container .input-box input[type="submit"]{
-    background: #0e4bf1;
-    font-size: 18px;
+.submitButtom {
+    font-size: 6px;
     color: #ffffff;
     border-radius: 5px;
-    cursor: pointer;
-    width: 300px;
-    height: 300px;
+    width: 30px;
+    height: 30px;
 }
 
-.container .input-box.button input{
+.chat-box {
+    display: inline-block;
+    position: relative;
     color: #fff;
     letter-spacing: 1px;
-    width: 300px;
-    height: 300px;
+    width: 850px;
+    height: 500px;
     border: none;
-    background: #4070f4;
     cursor: pointer;
+    margin: 0px;
 }
 .container .input-box.button input:hover{
     background: #0e4bf1;
@@ -98,4 +85,25 @@ html, body{
 .white-box {
     background-color: white;
     color: black;
+}
+
+input {
+    height: 30px;
+    width: 500px;
+    border: 1px solid #000;
+    
+    
+}
+label {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    display: inline-block;
+    font-size: 18px;
+    color:white;
+    height: 20px;
+    width: 200px;
+    margin-top: 10px;
+    margin-left: 10px;
+    text-align: right;
+    margin-right:15px;
+
 }

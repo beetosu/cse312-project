@@ -4,28 +4,56 @@
     <meta charset="UTF-8">
     <title>DM Page</title>
     <link rel="stylesheet" href="DmPage.css">
+    <script>
+
+        const socket = new WebSocket('ws://localhost:8001/' + {{socketName}});
+
+        socket.onmessage = addMessage;
+
+        document.addEventListener("keypress", function (event) {
+            if (event.code === "Enter") {
+                console.log("Sending the message")
+                sendMessage();
+            }
+        });
+        function sendMessage() {
+            //TODO Beep boop send message        
+            const chatBox = document.getElementById("chat-comment");
+            const comment = chatBox.value;
+            chatBox.value = "";
+            chatBox.focus();
+
+            if(comment !== "") {
+                //Output on the socket to the dm pag
+
+                //Get logged in user
+                socket.send(JSON.stringify({'sender' : {{username}} ,'comment': comment}));
+
+                //Send data to mysql database
+            }
+        }
+
+        function addMessage(message) {
+            const chatMessage = JSON.parse(message.data);
+            let chat = document.getElementById('chat');
+            chat.innerHTML += "<b>" + {{username}} + "</b>: " + chatMessage["comment"] + "<br/>";
+        }
+    </script>
     </head>
 <body>
     <div class="container-title" style="color: white; text-align: center">Text Channel</div>
 
-<div class="container">
-    <p>Jesse: Smells like up dog in here</p>
-    <br>
-    <p>CSE 312 Student: What's up dog?</p>
-    <br>
-    <p>Jesse: Nothing much dog what's up with you?</p>
-    <br>
-    <p>CSE 312 Student: Oh Jesse!</p>
-</div>
-<form action="/sendMessage" method="post" id="sendMessage-form" enctype="multipart/form-data">
-<div class="input-box underline">
-    <input type="text" placeholder="Message" name="Message" required>
-    <div class="underline"></div>
+<div class="container" id="chat">
+    <!--Set up templating here for messages-->
+    {{message}}
+
 </div>
 
-<div class="input-box button">
-    <input type="Submit" value="Send Message">
+<!-- Change form to input box --> 
+<div class="chat-box">
+    <label for="chat-comment" >Comment: </label>
+    <input id="chat-comment" type="text" name="comment"  >
 </div>
-</form>
+
 </body>
 </html>
