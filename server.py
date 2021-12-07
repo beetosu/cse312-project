@@ -262,12 +262,8 @@ def fix_response(reqObj, resObj):
         userList = [sender, recipiant]
         userList.sort()
         channel = "".join(userList)
-        print(resObj['body'])
         resObj['body'] = resObj['body'].replace(b'{{socketName}}', bytes(f"'{channel}'", 'ascii'))
         resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(f"'{sender}'", 'ascii'))
-        print('\n')
-        print(resObj['body'])
-        print('\n\n')
         history = [] # get message history here
         historyElem = b''
         for message in history:
@@ -279,8 +275,6 @@ def fix_response(reqObj, resObj):
 
 def check_request(reqObj, response):
     if reqObj['path'] == "/register" and reqObj['type'] == 'POST':
-        if False: # mysql_functions.db_check_user_exists(reqObj['queries']['username']):
-            return True, 'user already exists'
         if reqObj['queries']['confirm'] != reqObj['queries']['password']:
             return True, 'passwords do not match'
         error = check_password(reqObj['queries']['password'])
@@ -288,15 +282,8 @@ def check_request(reqObj, response):
             return True, error
         with open(f'./pictures/{reqObj["queries"]["username"]}.jpg', 'wb') as f:
             f.write(reqObj['queries']['picture'])
-        userObj = {
-            'username': reqObj['queries']['username'],
-            'password': bcrypt.hashpw(bytes(reqObj['queries']['password'], 'utf-8'), bcrypt.gensalt()),
-            'FirstName': reqObj['queries']['FirstName'],
-            'LastName': reqObj['queries']['LastName'],
-            'ProfilePictureUrl': f'./pictures/{reqObj["queries"]["username"]}.jpg'
-        }
-        # register user here
-        return False, ''
+        if not mysql_functions.db_insert_user(reqObj['queries']['username'], bcrypt.hashpw(bytes(reqObj['queries']['password'], 'utf-8'), bcrypt.gensalt()), reqObj['queries']['FirstName'], reqObj['queries']['LastName'], f'./pictures/{reqObj["queries"]["username"]}.jpg'):
+            return True, 'error occured during registration'
     elif reqObj['path'] == "/login" and reqObj['type'] == 'POST':
         passwordHash = bcrypt.hashpw(bytes(reqObj['queries']['password'], 'utf-8'), bcrypt.gensalt())
         validLogin = True # check login here
@@ -311,7 +298,6 @@ def check_request(reqObj, response):
                 "httpOnly": True
         })
         # add token to database here
-        return False, ''
     return False, ''
 
 def do_nothing(cookie, default):
