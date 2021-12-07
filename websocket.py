@@ -11,7 +11,6 @@ CONNECTIONS = {}
 # The callback function, called when websocket is created.
 async def send_message(websocket, path):
     # A placeholder for getting the messages on the database.
-    await websocket.send(json.dumps({"username": "you", "comment": "suck"}))
     try:
         # Register user on a preexisting path, or create a new path.
         if path not in CONNECTIONS:
@@ -19,8 +18,12 @@ async def send_message(websocket, path):
         CONNECTIONS[path].add(websocket)
         
         # Send a newly sent client message to all other connections on that path.
-        async for message in websocket:
-            websockets.broadcast(CONNECTIONS[path], message)
+        async for rawMessage in websocket:
+            message = json.loads(rawMessage)
+            if message.get('sender', 'not in this') in path:
+                recieverPath = path.replace(message['sender'], '')
+                websockets.broadcast(CONNECTIONS[recieverPath], rawMessage)
+            websockets.broadcast(CONNECTIONS[path], rawMessage)
     finally:
         # Unregister user
         CONNECTIONS[path].remove(websocket)
