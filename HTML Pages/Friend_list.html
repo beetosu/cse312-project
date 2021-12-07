@@ -7,30 +7,39 @@
 </head>
 <body>
 
+<div class="notification" style="text-align: center; float: right; font-size: 35px">
+    <button style="width: 80px; height: 100px; color:green; border-radius: 6px" onclick="sendNotification" id="chat-name">New notification from received!</button>
+</div>
+
+<div id="chat"></div>
+
 <div class="container">
 
-    <div class="title" style="color: #0e4bf1; text-align: center; font-size: 30px">Welcome Back! User</div>
+    <div class="title" style="color: #0e4bf1; text-align: center; font-size: 38px">Welcome Back User!
+        <label>
+            <input id="user-name" type="text" name="name">
+            <button value="online" style="width: 60px; height: 30px; border-radius: 6px" id="online" onclick="sendUserStatus">Online</button>
+        </label>
+    </div>
+    <div id="status"></div>
 
     <hr>
 
     <section class="contacts-library">
         <ul class="contacts-list">
-
-            <a href="DmPage.html">
                 <div class="contact-section">
                     <li class="list__item">
                         <p class="contact-name">Jack</p>
-                        <p id = "userStatusUpdate" style="text-align: center; font-weight: bold">Online</p>
+                        <p class="Login">Online</p>
                     </li>
                 </div>
-            </a>
 
             <hr>
 
                 <div class="contact-section">
                     <li class="list__item">
                         <p class="contact-name">Jacky</p>
-                        <p class="Logout">Offline</p>
+                        <p class="Login">Online</p>
                     </li>
                 </div>
 
@@ -39,6 +48,15 @@
                 <div class="contact-section">
                     <li class="list__item">
                         <p class="contact-name">Daniel</p>
+                        <p class="Logout">Online</p>
+                    </li>
+                </div>
+
+            <hr>
+
+                <div class="contact-section">
+                    <li class="list__item" id="Jennie">
+                        <p class="contact-name">Jennie</p>
                         <p class="Logout">Offline</p>
                     </li>
                 </div>
@@ -47,17 +65,8 @@
 
                 <div class="contact-section">
                     <li class="list__item">
-                        <p class="contact-name">Jennie</p>
-                        <p class="Login">Online</p>
-                    </li>
-                </div>
-
-            <hr>
-
-                <div class="contact-section">
-                    <li class="list__item">
-                        <p class="contact-name">Smith</p>
-                        <p class="Login">Online</p>
+                        <p class="contact-name">Smith
+                        <p class="Logout">Offline</p>
                     </li>
                 </div>
 
@@ -66,7 +75,79 @@
     </section>
 </div>
 
-<script src="UserStatus.js"></script>
+<script>
+    //Online_Offline
+    const statusSocket = new WebSocket('ws://' + "localhost:8001" + '/onlinelist');
+    // User status websocket(online/offline)
+    // Call the addUserStatus function whenever status is received from the server over the WebSocket
+    socket.onStatus = addUserStatus;
+
+    const btn = document.getElementById("online");
+    btn.addEventListener("click", ()=>{
+        if(btn.innerText === "Online"){
+            btn.style.backgroundColor = "Tomato";
+            btn.innerText = "Offline";
+            sendUserStatus();
+        }else{
+            btn.style.backgroundColor = "MediumSeaGreen";
+            btn.innerText = "Online";
+            sendUserStatus();
+        }
+    })
+
+    // Read the name/comment the user is sending to chat and send it to the server over the WebSocket as a JSON string
+    // Called whenever the user clicks the Send button or pressed enter
+    function sendUserStatus() {
+        const userName = document.getElementById("user-name").value; //Where should this be?
+        const userStatus = btn.value;
+        btn.value = "";
+        btn.focus();
+        if(userStatus !== "") {
+            socket.send(JSON.stringify({'username': userName, 'status': userStatus}));
+        }
+    }
+
+    // Called when the server sends a new message over the WebSocket and renders that message so the user can read it
+    function addUserStatus(status) {
+        const online_offline = JSON.parse(status.data);
+        let status1 = document.getElementById('status');
+        status1.innerHTML += "<b>" + online_offline['username'] + "</b>: " + online_offline["status"] + "<br/>";
+    }
+
+
+    //Notification
+    const NotificationSocket = new WebSocket('ws://' + "localhost:8001" + '/{{username}}');
+    // Notification Websocket
+    // Call the addMessage function whenever data is received from the server over the WebSocket
+    socket.onmessage = notificationMessage;
+
+    // Allow users to send messages by pressing enter instead of clicking the Send button
+    document.addEventListener("keypress", function (event) {
+        if (event.code === "Enter") {
+            sendNotification();
+        }
+    });
+
+    // Read the name/comment the user is sending to chat and send it to the server over the WebSocket as a JSON string
+    // Called whenever the user clicks the Send button or pressed enter
+    function sendNotification() {
+        const userName = document.getElementById("chat-name").value;
+        const user = document.getElementById("chat-comment");
+        const comment = user.value;
+        user.value = "";
+        user.focus();
+        if(comment !== "") {
+            socket.send(JSON.stringify({'username': userName, 'comment': comment}));
+        }
+    }
+
+    // Called when the server sends a new message over the WebSocket and renders that message so the user can read it
+    function notificationMessage(message) {
+        const notificationMessage = JSON.parse(message.data);
+        let notification = document.getElementById('chat');
+        notification.innerHTML += "<b>" + notificationMessage['username'] + "</b>: " + notificationMessage["comment"] + "<br/>";
+    }
+</script>
 
 </body>
 </html>

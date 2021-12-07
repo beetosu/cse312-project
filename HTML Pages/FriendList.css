@@ -26,6 +26,11 @@ a{
     background: #ffffff;
 }
 
+select {
+    font-size: 1.0rem;
+    padding: 2px 5px;
+    width: 80px;
+}
 
 .contact-name{
     color: #0e4bf1;
@@ -49,7 +54,7 @@ ul{
     text-align: center;
     padding: .4em .5em;
     border-radius: 0 100px 100px 100px;
-    background-color: red;
+    background-color: Tomato;
 }
 
 .Login{
@@ -58,7 +63,7 @@ ul{
     text-align: center;
     padding: .4em .5em;
     border-radius: 0 100px 100px 100px;
-    background-color: green;
+    background-color: MediumSeaGreen;
 }
 
 
@@ -68,4 +73,7 @@ ul{
     align-items: center;
     padding: 0 1.5em;
     transition: 0.3s;
+}
+
+.notification{
 }
