@@ -12,16 +12,28 @@
             "path": "./HTML Pages/Homepage.css",
             "headers": {}
         },
-        "/profile": {
+        "/list": {
             "code": "200 OK",
             "type": "text/html",
-            "path": "./HTML Pages/Profile.html",
+            "path": "./HTML Pages/Friend_list.html",
             "headers": {}
         },
-        "/Profile.css": {
+        "/FriendList.css": {
             "code": "200 OK",
             "type": "text/css",
-            "path": "./HTML Pages/Profile.css",
+            "path": "./HTML Pages/FriendList.css",
+            "headers": {}
+        },
+        "/dm": {
+            "code": "200 OK",
+            "type": "text/html",
+            "path": "./HTML Pages/DmPage.html",
+            "headers": {}
+        },
+        "/DmPage.css": {
+            "code": "200 OK",
+            "type": "text/css",
+            "path": "./HTML Pages/DmPage.css",
             "headers": {}
         },
         "/": {
@@ -49,7 +61,7 @@
             "type": "text/html",
             "body": "",
             "headers": {
-                "location": "/"
+                "location": "/login"
             }
         },
         "/login": {
@@ -57,7 +69,7 @@
             "type": "text/html",
             "body": "",
             "headers": {
-                "location": "/profile"
+                "location": "/list"
             }
         }
     }
