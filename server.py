@@ -238,7 +238,20 @@ def check_password(password):
 
 
 def fix_response(reqObj, resObj):
-    if reqObj['path'] == '/dm':
+    if reqObj['path'] == '/list':
+        userList = [] # get list of users here
+        userElement = b''
+        for user in userList:
+            if user['LoggedIn']: 
+                status = 'Online'
+            else:
+                status = 'Offline'
+            userElement += b'<div class="contact-section">'
+            userElement += bytes(f'<li class="list__item" id={user["username"]}>', 'ascii')
+            userElement += bytes(f'<p class="contact-name">{user["username"]}</p>', 'ascii')
+            userElement += bytes(f'<p class="Login">{status}</p></li></div><hr>', 'ascii')
+        resObj['body'] = resObj['body'].replace(b'{{users}}', userElement)
+    elif reqObj['path'] == '/dm':
         recipiant = reqObj['queries'].get('user')
         if recipiant is None:
             resObj['header'] = 'HTTP/1.1 401 Bad Request'
