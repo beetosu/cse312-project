@@ -1,10 +1,12 @@
 import socketserver
 from os import listdir
-from secrets import token_hex
+from secrets import token_hex, token_urlsafe
 import json
-from modify import modify_request, modify_response
+import mysql_functions
+import bcrypt
 
-xsrf_tokens = []
+
+# mysql_functions.db_init()
 
 def preventInjection(text):
     return text.replace("&","&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -62,6 +64,8 @@ def parse_request(req):
             lineBytes = req.readline()
             line = lineBytes.strip()
             if line == bytes(boundary + '--', 'ascii'):
+                if isFile:
+                    reqObj["queries"][name] = file
                 break
             if bytes("Content-Disposition: form-data", 'ascii') in line:
                 name=line.decode("ascii").split('name="')[1].split('"')[0]
@@ -101,11 +105,16 @@ def parse_template(html, queries):
 '''
 def build_response(reqObj):
     response = valid_requests.get(reqObj["type"], not_found_response).get(reqObj["path"], not_found_response)
+    response['cookies'] = []
     if 'xsrf_token' in reqObj['queries'].keys():
         if reqObj['queries']['xsrf_token'] not in xsrf_tokens:
             response = forbidden_response
         else:
             handle_queries(reqObj["queries"], reqObj["path"], reqObj["type"])
+    isError, errorMsg = check_request(reqObj, response)
+    if isError:
+        response = error_response
+        response["body"] = errorMsg
     resObj = {
         "head": f'HTTP/1.1 {response["code"]}',
         "headers": {
@@ -117,8 +126,6 @@ def build_response(reqObj):
     for k, v in response["headers"].items():
         resObj["headers"][k] = v
     
-    print(resObj)
-
     if "body" in response.keys():
         resObj["headers"]["Content-Length"] = len(response["body"])
         resObj["body"] = bytes(response["body"], 'UTF-8')
@@ -155,6 +162,13 @@ not_found_response = {
     "headers": {}
 }
 
+error_response = {
+    "code": "400 Bad Request",
+    "type": "text/plain",
+    "body": "",
+    "headers": {}
+}
+
 forbidden_response = {
     "code": "403 Forbidden",
     "type": "text/plain",
@@ -166,10 +180,7 @@ forbidden_response = {
 class TCPRequestHandler(socketserver.StreamRequestHandler):
     def handle(self):
         reqObj = parse_request(self.rfile)
-        reqObj = modify_request(reqObj)
-
         resObj = build_response(reqObj)
-        resObj = modify_response(resObj)
 
         res = bytes(f'{resObj["head"]}\r\n', "ascii")
         for k, v in resObj["headers"].items():
@@ -179,6 +190,92 @@ class TCPRequestHandler(socketserver.StreamRequestHandler):
         res += bytes("\r\n", "ascii")
         res += resObj["body"]
         self.wfile.write(res)
+
+xsrf_tokens = []
+
+def check_password(password):
+    if len(password) < 8:
+        return 'Password is too small'
+    try:
+        chars = bytes(password, 'utf-8')
+        conditions = [
+            {
+                'name': 'lowercase',
+                'condition': lambda x : x >= 97 and x <= 122,
+                'met': False,
+                'message': 'Your password needs at least one lowercase letter, enter something else'
+            },
+            {
+                'name': 'uppercase',
+                'condition': lambda x : x >= 65 and x <= 90,
+                'met': False,
+                'message': 'Your password needs at least one uppercase letter, enter something else'
+            },
+            {
+                'name': 'number',
+                'condition': lambda x : x >= 48 and x <= 57,
+                'met': False,
+                'message': 'Your password needs at least one number, enter something else'
+            },
+            {
+                'name': 'special characters',
+                'condition': lambda x : (x >= 33 and x <= 47) or (x >= 58 and x <= 64) or (x >= 91 and x <= 96) or (x >= 123 and x <= 126),
+                'met': False,
+                'message': 'Your password needs at least one special character, enter something else'
+            }
+        ]
+        for i in chars:
+            if i < 33 or i > 126:
+                return 'Invalid character occured.'
+            for c in conditions:
+                c['met'] = c['condition'](i) or c['met']
+        for c in conditions:
+            if not c['met']:
+                return c['message']
+    except (UnicodeDecodeError):
+        return 'Invalid character occured.'
+
+
+
+def check_request(reqObj, response):
+    if reqObj['path'] == "/register" and reqObj['type'] == 'POST':
+        if False: # mysql_functions.db_check_user_exists(reqObj['queries']['username']):
+            return True, 'user already exists'
+        if reqObj['queries']['confirm'] != reqObj['queries']['password']:
+            return True, 'passwords do not match'
+        error = check_password(reqObj['queries']['password'])
+        if error is not None:
+            return True, error
+        with open(f'./pictures/{reqObj["queries"]["username"]}.jpg', 'wb') as f:
+            f.write(reqObj['queries']['picture'])
+        userObj = {
+            'username': reqObj['queries']['username'],
+            'password': bcrypt.hashpw(bytes(reqObj['queries']['password'], 'utf-8'), bcrypt.gensalt()),
+            'FirstName': reqObj['queries']['FirstName'],
+            'LastName': reqObj['queries']['LastName'],
+            'ProfilePictureUrl': f'./pictures/{reqObj["queries"]["username"]}.jpg'
+        }
+        # register user here
+        return False, ''
+    elif reqObj['path'] == "/login" and reqObj['type'] == 'POST':
+        passwordHash = bcrypt.hashpw(bytes(reqObj['queries']['password'], 'utf-8'), bcrypt.gensalt())
+        validLogin = True # check login here
+        if not validLogin:
+            return True, "invalid login"
+        token = token_urlsafe(16)
+        response["cookies"].append({
+                "name": "token",
+                "default": token,
+                "alter": do_nothing,
+                "max-age": 86400,
+                "httpOnly": True
+        })
+        # add token to database here
+        return False, ''
+    return False, ''
+
+def do_nothing(cookie, default):
+    return default
 
 server = socketserver.TCPServer(("0.0.0.0", 8000), TCPRequestHandler)
 print("server running @ http://localhost:8000")
