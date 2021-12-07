@@ -17,7 +17,7 @@
 
     <div class="title" style="color: #0e4bf1; text-align: center; font-size: 38px">Welcome Back User!
         <label>
-            <button value="online" style="width: 60px; height: 30px; border-radius: 6px" id="online" onclick="sendUserStatus">Online</button>
+            <button value="online" style="width: 60px; height: 30px; border-radius: 6px" id="online" onclick="sendUserStatus()">Online</button>
         </label>
     </div>
     <div id="status"></div>
@@ -79,7 +79,7 @@
     const statusSocket = new WebSocket('ws://' + "localhost:8001" + '/onlinelist');
     // User status websocket(online/offline)
     // Call the addUserStatus function whenever status is received from the server over the WebSocket
-    socket.onStatus = addUserStatus;
+    statusSocket.onStatus = addUserStatus;
 
     const btn = document.getElementById("online");
     btn.addEventListener("click", ()=>{
@@ -101,7 +101,7 @@
         btn.innerText = "";
         btn.focus();
         if(userStatus !== "") {
-            socket.send(JSON.stringify({'username': userName, 'status': userStatus}));
+            statusSocket.send(JSON.stringify({'username': userName, 'status': userStatus}));
         }
     }
 
@@ -112,10 +112,10 @@
 
 
     //Notification feature
-    const NotificationSocket = new WebSocket('ws://' + "localhost:8001" + '/{{username}}');
+    const notificationSocket = new WebSocket('ws://' + "localhost:8001" + '/{{username}}');
     // Notification Websocket
     // Call the addMessage function whenever data is received from the server over the WebSocket
-    socket.onmessage = notificationMessage;
+    notificationSocket.onmessage = notificationMessage;
 
     // Called when the server sends a new message over the WebSocket and renders that message so the user can read it
     function notificationMessage(message) {
