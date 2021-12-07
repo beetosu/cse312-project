@@ -74,7 +74,7 @@ def db_check_user_exists(username: str) -> bool:
     connection.close()
     return False
 
-def db_insert_user(username: str, password: str, firstName: str, lastName: str, profilePictureUrl: str) -> bool
+def db_insert_user(username: str, password: str, firstName: str, lastName: str, profilePictureUrl: str) -> bool:
     # Inserts a user into userData. Returns True if successful, 
     # False if username is taken.
     if not db_check_user_exists(username):

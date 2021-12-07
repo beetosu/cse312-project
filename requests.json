@@ -24,6 +24,18 @@
             "path": "./HTML Pages/FriendList.css",
             "headers": {}
         },
+        "/dm": {
+            "code": "200 OK",
+            "type": "text/html",
+            "path": "./HTML Pages/DmPage.html",
+            "headers": {}
+        },
+        "/DmPage.css": {
+            "code": "200 OK",
+            "type": "text/css",
+            "path": "./HTML Pages/DmPage.css",
+            "headers": {}
+        },
         "/": {
             "code": "200 OK",
             "type": "text/html",

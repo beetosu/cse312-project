@@ -36,7 +36,7 @@
         function addMessage(message) {
             const chatMessage = JSON.parse(message.data);
             let chat = document.getElementById('chat');
-            chat.innerHTML += "<b>" + {{username}} + "</b>: " + chatMessage["comment"] + "<br/>";
+            chat.innerHTML += "<b>" + chatMessage['sender'] + "</b>: " + chatMessage["comment"] + "<br/>";
         }
     </script>
     </head>

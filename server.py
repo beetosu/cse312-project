@@ -137,6 +137,7 @@ def build_response(reqObj):
             resObj["body"] = file
         
         resObj["headers"]["Content-Length"] = len(resObj["body"])
+    resObj = fix_response(reqObj, resObj)
     return resObj
 
 '''
@@ -235,6 +236,45 @@ def check_password(password):
     except (UnicodeDecodeError):
         return 'Invalid character occured.'
 
+
+def fix_response(reqObj, resObj):
+    if reqObj['path'] == '/dm':
+        recipiant = reqObj['queries'].get('user')
+        if recipiant is None:
+            resObj['header'] = 'HTTP/1.1 401 Bad Request'
+            resObj['headers']['Content-Type'] = 'text/plain'
+            resObj['body'] = b'no user specificed'
+            resObj["headers"]["Content-Length"] = len(resObj["body"])
+            return resObj
+        if False: # not mysql_functions.db_check_user_exists(recipiant):
+            resObj['header'] = 'HTTP/1.1 401 Bad Request'
+            resObj['headers']['Content-Type'] = 'text/plain'
+            resObj['body'] = b'user could not be found'
+            resObj["headers"]["Content-Length"] = len(resObj["body"])
+            return resObj
+        sender = "Tom" # verify token and get username here
+        if sender == recipiant:
+            resObj['header'] = 'HTTP/1.1 401 Bad Request'
+            resObj['headers']['Content-Type'] = 'text/plain'
+            resObj['body'] = b'cannot send messages to self'
+            resObj["headers"]["Content-Length"] = len(resObj["body"])
+            return resObj
+        userList = [sender, recipiant]
+        userList.sort()
+        channel = "".join(userList)
+        print(resObj['body'])
+        resObj['body'] = resObj['body'].replace(b'{{socketName}}', bytes(f"'{channel}'", 'ascii'))
+        resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(f"'{sender}'", 'ascii'))
+        print('\n')
+        print(resObj['body'])
+        print('\n\n')
+        history = [] # get message history here
+        historyElem = b''
+        for message in history:
+            pass # make each message into an html element
+        resObj['body'] = resObj['body'].replace(b'{{message}}', historyElem)
+    resObj["headers"]["Content-Length"] = len(resObj["body"])
+    return resObj
 
 
 def check_request(reqObj, response):
