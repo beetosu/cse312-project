@@ -137,7 +137,7 @@ def db_check_auth_token(auth_token: str) -> str:
     cursor.execute(sqlRetrieval)
     retrieved_pairs = cursor.fetchall()
     for pair in retrieved_pairs:
-        if bcrypt.checkpw(auth_token.encode(), bytes(pair[1])):
+        if bcrypt.checkpw(auth_token.encode(), bytes(pair[1], 'utf-8')):
             connection.close()
             return pair[0]
     connection.close()
@@ -175,7 +175,7 @@ def db_insert_message(channel: str, sender: str, recipient: str, message: str):
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
     cursor = connection.cursor()
     sqlInsertion = "INSERT INTO messageData (channel, message, sender, recipient) VALUES (%s, %s, %s, %s)"
-    sqlPrepareValues(channel, message, sender, recipient)
+    sqlPrepareValues = (channel, message, sender, recipient)
     cursor.execute(sqlInsertion, sqlPrepareValues)
     connection.commit()
     connection.close()
