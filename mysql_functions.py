@@ -160,6 +160,15 @@ def db_retrieve_list_of_users() -> list(tuple[str, str]):
     connection.close()
     return returnList
 
+def db_logout(username: str):
+    # Changes a user's online status to offline.
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlUpdate = "UPDATE userData SET login = False WHERE username=%s"
+    cursor.execute(sqlUpdate, username)
+    connection.commit()
+    connection.close()
+
 def db_insert_message(channel: str, sender: str, recipient: str, message: str):
     # Inserts a message into the database.
     return None
