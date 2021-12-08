@@ -98,7 +98,7 @@ def db_login_user(username: str, password: str) -> bool:
         connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
         cursor = connection.cursor()
         sqlRetrieval = "SELECT username, password FROM userData WHERE username = %s"
-        sqlPrepareUsername = username
+        sqlPrepareUsername = (username, )
         cursor.execute(sqlRetrieval, sqlPrepareUsername)
         retrieved_password = cursor.fetchone()[1]
         if bcrypt.checkpw(password.encode(), bytes(retrieved_password)):
@@ -165,7 +165,8 @@ def db_logout(username: str):
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
     cursor = connection.cursor()
     sqlUpdate = "UPDATE userData SET login=False WHERE username=%s"
-    cursor.execute(sqlUpdate, username)
+    sqlPrepareUsername = (username, )
+    cursor.execute(sqlUpdate, sqlPrepareUsername)
     connection.commit()
     connection.close()
 
