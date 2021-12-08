@@ -7,20 +7,15 @@
 </head>
 <body>
 
-<div class="notification" style="text-align: center; float: right; font-size: 35px">
-    <button style="width: 80px; height: 100px; color:green; border-radius: 6px" id="chat-name">New notification received!</button>
-</div>
-
 <div id="notification"></div>
 
 <div class="container">
 
     <div class="title" style="color: #0e4bf1; text-align: center; font-size: 38px">Welcome Back User!
         <label>
-            <button value="online" style="width: 60px; height: 30px; border-radius: 6px" id="online" onclick="sendUserStatus()">Online</button>
+            <input type="button" value="Online" style="width: 60px; height: 30px; border-radius: 6px; background-color: MediumSeaGreen" id="online" >
         </label>
     </div>
-    <div id="status"></div>
 
     <hr>
 
@@ -47,7 +42,7 @@
                 <div class="contact-section">
                     <li class="list__item">
                         <p class="contact-name">Daniel</p>
-                        <p class="Logout">Online</p>
+                        <p class="Logout">Offline</p>
                     </li>
                 </div>
 
@@ -77,28 +72,28 @@
 <script>
     //Online_Offline status feature
     const statusSocket = new WebSocket('ws://' + "localhost:8001" + '/onlinelist');
+
     // User status websocket(online/offline)
     // Call the addUserStatus function whenever status is received from the server over the WebSocket
-    statusSocket.onStatus = addUserStatus;
+    statusSocket.onmessage = addUserStatus;
 
     const btn = document.getElementById("online");
     btn.addEventListener("click", ()=>{
-        if(btn.innerText === "Online"){
+        if(btn.value === "Online"){
             btn.style.backgroundColor = "Tomato";
-            btn.innerText = "Offline";
-            sendUserStatus();
+            btn.value = "Offline";
+            sendUserStatus()
         }else{
             btn.style.backgroundColor = "MediumSeaGreen";
-            btn.innerText = "Online";
-            sendUserStatus();
+            btn.value = "Online";
+            sendUserStatus()
         }
     })
 
     // Read the name/status the user is sending it to the server over the WebSocket as a JSON string
     function sendUserStatus() {
         const userName = "{{username}}"; //How do we get the username from?
-        const userStatus = btn.innerText;
-        btn.innerText = "";
+        const userStatus = btn.value;
         btn.focus();
         if(userStatus !== "") {
             statusSocket.send(JSON.stringify({'username': userName, 'status': userStatus}));
@@ -107,21 +102,23 @@
 
     // Called when the server sends a new message over the WebSocket
     function addUserStatus() {
-        alert("{{username}} had been logged out recently!")
+        if(btn.value === "Online") {
+            alert("{{username}} had been logged in")
+        }else {
+            alert("{{username}} had been logged out")
+        }
     }
 
 
     //Notification feature
     const notificationSocket = new WebSocket('ws://' + "localhost:8001" + '/{{username}}');
+
     // Notification Websocket
-    // Call the addMessage function whenever data is received from the server over the WebSocket
     notificationSocket.onmessage = notificationMessage;
 
-    // Called when the server sends a new message over the WebSocket and renders that message so the user can read it
-    function notificationMessage(message) {
-        const notificationMessage = JSON.parse(message.data);
-        let notification = document.getElementById('notification');
-        notification.innerHTML += "<b>" + notificationMessage['username'] + "</b>: " + notificationMessage["notificationMessage"] + "<br/>";
+    // Sends an alert to user when received a message
+    function notificationMessage() {
+        alert("{{username}} sends you a message!")
     }
 </script>
 
