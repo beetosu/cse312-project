@@ -1,9 +1,10 @@
 import socketserver
 from os import listdir
-from secrets import token_hex, token_urlsafe
+from secrets import token_bytes, token_hex, token_urlsafe
 import json
 import mysql_functions
 import bcrypt
+import hashlib
 
 
 # mysql_functions.db_init()
@@ -111,7 +112,7 @@ def build_response(reqObj):
             response = forbidden_response
         else:
             handle_queries(reqObj["queries"], reqObj["path"], reqObj["type"])
-    isError, errorMsg = check_request(reqObj, response)
+    isError, errorMsg, response = check_request(reqObj, response)
     if isError:
         response = error_response
         response["body"] = errorMsg
@@ -123,6 +124,7 @@ def build_response(reqObj):
         },
         "path": reqObj.get("path", '/error')
     }
+    resObj['cookies'] = response['cookies']
     for k, v in response["headers"].items():
         resObj["headers"][k] = v
     
@@ -251,8 +253,14 @@ def fix_response(reqObj, resObj):
             userElement += bytes(f'<p class="contact-name">{user["username"]}</p>', 'ascii')
             userElement += bytes(f'<p class="Login">{status}</p></li></div><hr>', 'ascii')
         resObj['body'] = resObj['body'].replace(b'{{users}}', userElement)
-        user = "Tom" # verify token and get username here
-        resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(f"'{user}'", 'ascii'))
+        user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
+        if user is None:
+            resObj['header'] = 'HTTP/1.1 403 Forbidden'
+            resObj['headers']['Content-Type'] = 'text/plain'
+            resObj['body'] = b'user must be logged in to access list'
+            resObj["headers"]["Content-Length"] = len(resObj["body"])
+            return resObj 
+        resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(user, 'ascii'))
     elif reqObj['path'] == '/dm':
         recipiant = reqObj['queries'].get('user')
         if recipiant is None:
@@ -261,13 +269,19 @@ def fix_response(reqObj, resObj):
             resObj['body'] = b'no user specificed'
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj
-        if False: # not mysql_functions.db_check_user_exists(recipiant):
+        if not mysql_functions.db_check_user_exists(recipiant):
             resObj['header'] = 'HTTP/1.1 401 Bad Request'
             resObj['headers']['Content-Type'] = 'text/plain'
             resObj['body'] = b'user could not be found'
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj
-        sender = "Tom" # verify token and get username here
+        sender = mysql_functions.db_check_auth_token(reqObj["headers"]["Cookie"].split("=")[-1])
+        if sender is None:
+            resObj['header'] = 'HTTP/1.1 403 Forbidden'
+            resObj['headers']['Content-Type'] = 'text/plain'
+            resObj['body'] = b'invalid auth token'
+            resObj["headers"]["Content-Length"] = len(resObj["body"])
+            return resObj 
         if sender == recipiant:
             resObj['header'] = 'HTTP/1.1 401 Bad Request'
             resObj['headers']['Content-Type'] = 'text/plain'
@@ -291,29 +305,29 @@ def fix_response(reqObj, resObj):
 def check_request(reqObj, response):
     if reqObj['path'] == "/register" and reqObj['type'] == 'POST':
         if reqObj['queries']['confirm'] != reqObj['queries']['password']:
-            return True, 'passwords do not match'
+            return True, 'passwords do not match', response
         error = check_password(reqObj['queries']['password'])
         if error is not None:
-            return True, error
+            return True, error, response
         with open(f'./pictures/{reqObj["queries"]["username"]}.jpg', 'wb') as f:
             f.write(reqObj['queries']['picture'])
-        if not mysql_functions.db_insert_user(reqObj['queries']['username'], bcrypt.hashpw(bytes(reqObj['queries']['password'], 'utf-8'), bcrypt.gensalt()), reqObj['queries']['FirstName'], reqObj['queries']['LastName'], f'./pictures/{reqObj["queries"]["username"]}.jpg'):
-            return True, 'error occured during registration'
+        if not mysql_functions.db_insert_user(reqObj['queries']['username'], bcrypt.hashpw(reqObj['queries']['password'].encode(), bcrypt.gensalt()), reqObj['queries']['FirstName'], reqObj['queries']['LastName'], f'./pictures/{reqObj["queries"]["username"]}.jpg'):
+            return True, 'error occured during registration', response
     elif reqObj['path'] == "/login" and reqObj['type'] == 'POST':
-        passwordHash = bcrypt.hashpw(bytes(reqObj['queries']['password'], 'utf-8'), bcrypt.gensalt())
-        validLogin = True # check login here
+        validLogin = mysql_functions.db_login_user(reqObj['queries']['username'], reqObj['queries']['password'])
         if not validLogin:
-            return True, "invalid login"
+            return True, "invalid login", response
         token = token_urlsafe(16)
-        response["cookies"].append({
+        hash_token = bcrypt.hashpw(token.encode(), bcrypt.gensalt())
+        mysql_functions.db_insert_auth_token(reqObj['queries']['username'], hash_token)
+        response["cookies"] = [{
                 "name": "token",
-                "default": token,
+                "value": token,
                 "alter": do_nothing,
                 "max-age": 86400,
                 "httpOnly": True
-        })
-        # add token to database here
-    return False, ''
+        }]
+    return False, '', response
 
 def do_nothing(cookie, default):
     return default
