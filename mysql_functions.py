@@ -139,3 +139,20 @@ def db_check_auth_token(auth_token: str) -> str:
             return pair[0]
     connection.close()
     return None
+
+def db_retrieve_list_of_users() -> list(tuple[str, str]):
+    # Retrieves a list of tuples, each containing one user
+    # and their online status.
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    returnList = []
+    sqlRetrieval = "SELECT username, LoggedIn FROM userData"
+    cursor.execute(sqlRetrieval)
+    retrieved_pairs = cursor.fetchall()
+    for pair in retrieved_pairs:
+        if pair[1] == True:
+            returnList.append((pair[0], "Online"))
+        else:
+            returnList.append((pair[0], "Offline"))
+    connection.close()
+    return returnList
