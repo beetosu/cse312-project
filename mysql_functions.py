@@ -3,7 +3,7 @@
 import mysql.connector
 import bcrypt
 
-dbuser = 'root'
+dbuser = 'user'
 dbpw = 'changeme'
 dbname = 'classchat'
 dbhost = 'mysql'
