@@ -156,3 +156,19 @@ def db_retrieve_list_of_users() -> list(tuple[str, str]):
             returnList.append((pair[0], "Offline"))
     connection.close()
     return returnList
+
+def db_insert_message(channel: str, sender: str, recipient: str, message: str):
+    # Inserts a message into the database.
+    return None
+
+def db_retrieve_channel_messages(channel: str) -> list(tuple[str, str, str]):
+    # Retrieves all messages tied to a specific channel
+    # on the site. Returns a tuple containing their
+    # sender, recipient, and the content of the message itself.
+    return None
+
+def db_retrieve_dms(sender: str, recipient: str) -> list(tuple[str, str, str]):
+    # Retrieves a user's DMs with another specific user.
+    # Returns a tuple containing each DM's sender, recipient,
+    # and the content of each message.
+    return None
