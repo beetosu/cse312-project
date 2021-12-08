@@ -102,6 +102,9 @@ def db_login_user(username: str, password: str) -> bool:
         cursor.execute(sqlRetrieval, sqlPrepareUsername)
         retrieved_password = cursor.fetchone()[1]
         if bcrypt.checkpw(password.encode(), bytes(retrieved_password)):
+            sqlUpdate = "UPDATE userData SET login = True WHERE username = %s"
+            cursor.execute(sqlUpdate, sqlPrepareUsername)
+            connection.commit()
             connection.close()
             return True
         connection.close()
