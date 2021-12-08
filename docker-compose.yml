@@ -13,6 +13,8 @@ services:
       WAIT_HOSTS: mysql:3306
       DB_USERNAME: 'user'
       DB_PASSWORD: 'changeme'
+    volumes:
+      - './:/root'
     ports:
       - '8080:8000'
   websockets:
