@@ -143,7 +143,7 @@ def db_check_auth_token(auth_token: str) -> str:
     connection.close()
     return None
 
-def db_retrieve_list_of_users() -> list(tuple[str, str]):
+def db_retrieve_list_of_users() -> list[tuple[str, str]]:
     # Retrieves a list of tuples, each containing one user
     # and their online status.
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
@@ -164,22 +164,28 @@ def db_logout(username: str):
     # Changes a user's online status to offline.
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
     cursor = connection.cursor()
-    sqlUpdate = "UPDATE userData SET login = False WHERE username=%s"
+    sqlUpdate = "UPDATE userData SET login=False WHERE username=%s"
     cursor.execute(sqlUpdate, username)
     connection.commit()
     connection.close()
 
 def db_insert_message(channel: str, sender: str, recipient: str, message: str):
     # Inserts a message into the database.
-    return None
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlInsertion = "INSERT INTO messageData (channel, message, sender, recipient) VALUES (%s, %s, %s, %s)"
+    sqlPrepareValues(channel, message, sender, recipient)
+    cursor.execute(sqlInsertion, sqlPrepareValues)
+    connection.commit()
+    connection.close()
 
-def db_retrieve_channel_messages(channel: str) -> list(tuple[str, str, str]):
+def db_retrieve_channel_messages(channel: str) -> list[tuple[str, str, str]]:
     # Retrieves all messages tied to a specific channel
-    # on the site. Returns a tuple containing their
+    # on the site. Returns a list of tuples containing their
     # sender, recipient, and the content of the message itself.
     return None
 
-def db_retrieve_dms(sender: str, recipient: str) -> list(tuple[str, str, str]):
+def db_retrieve_dms(sender: str, recipient: str) -> list[tuple[str, str, str]]:
     # Retrieves a user's DMs with another specific user.
     # Returns a tuple containing each DM's sender, recipient,
     # and the content of each message.
