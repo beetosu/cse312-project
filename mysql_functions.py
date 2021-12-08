@@ -164,7 +164,7 @@ def db_logout(username: str):
     # Changes a user's online status to offline.
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
     cursor = connection.cursor()
-    sqlUpdate = "UPDATE userData SET login=False WHERE username=%s"
+    sqlUpdate = "UPDATE userData SET LoggedIn=False WHERE username=%s"
     sqlPrepareUsername = (username, )
     cursor.execute(sqlUpdate, sqlPrepareUsername)
     connection.commit()
