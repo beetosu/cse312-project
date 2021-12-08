@@ -1,6 +1,7 @@
 # This file will contain any functions needed to add/update/retrieve
 # data from the database.
 import mysql.connector
+import bcrypt
 
 dbuser = 'root'
 dbpw = 'changeme'
@@ -53,9 +54,9 @@ def db_init():
     # Initializes server tables if they don't already exist.
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
     cursor = connection.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS userData (id INT AUTO_INCREMENT PRIMARY KEY, username TEXT, password TEXT, FirstName TEXT, LastName TEXT, ProfilePictureUrl TEXT, LoggedIn BOOLEAN)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS userData (id INT AUTO_INCREMENT PRIMARY KEY, username TEXT, password BINARY(60), FirstName TEXT, LastName TEXT, ProfilePictureUrl TEXT, LoggedIn BOOLEAN)")
     cursor.execute("CREATE TABLE IF NOT EXISTS messageData (id INT AUTO_INCREMENT PRIMARY KEY, channel TEXT, message TEXT, sender TEXT, recipient TEXT)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS userTokens (id INT AUTO_INCREMENT PRIMARY KEY, username TEXT, token TEXT)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS userTokens (id INT AUTO_INCREMENT PRIMARY KEY, username TEXT, token BINARY(60))")
     connection.close()
 
 def db_check_user_exists(username: str) -> bool:
@@ -74,16 +75,67 @@ def db_check_user_exists(username: str) -> bool:
     connection.close()
     return False
 
-def db_insert_user(username: str, password: str, firstName: str, lastName: str, profilePictureUrl: str) -> bool:
+def db_insert_user(username: str, password_hash: bytes, firstName: str, lastName: str, profilePictureUrl: str) -> bool:
     # Inserts a user into userData. Returns True if successful, 
-    # False if username is taken.
+    # False if username is taken/registration failed.
     if not db_check_user_exists(username):
         connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
         cursor = connection.cursor()
         sqlInsertion = "INSERT INTO userData (username, password, FirstName, LastName, ProfilePictureUrl, LoggedIn) VALUES (%s, %s, %s, %s, %s, %s)"
-        sqlPrepareValues = (username, password, firstName, lastName, profilePictureUrl, False)
+        sqlPrepareValues = (username, password_hash, firstName, lastName, profilePictureUrl, False)
         cursor.execute(sqlInsertion, sqlPrepareValues)
         connection.commit()
         connection.close()
         return True
     return False
+
+def db_login_user(username: str, password: str) -> bool:
+    # Takes a username and an unhashed password as parameters.
+    # If the user exists, gets the hashed password tied to that
+    # user from the database. If the hashed password is the same
+    # as the input password, returns True. Otherwise, returns False.
+    if db_check_user_exists(username): 
+        connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+        cursor = connection.cursor()
+        sqlRetrieval = "SELECT username, password FROM userData WHERE username = %s"
+        sqlPrepareUsername = username
+        cursor.execute(sqlRetrieval, sqlPrepareUsername)
+        retrieved_password = cursor.fetchone()[1]
+        if bcrypt.checkpw(password.encode(), bytes(retrieved_password)):
+            connection.close()
+            return True
+        connection.close()
+    return False
+
+def db_insert_auth_token(username: str, auth_token_hash: bytes):
+    # ONLY use this function if the user has been successfully
+    # logged in!!!
+    #
+    # Takes a username and a hashed authentication token as parameters.
+    # Does not check whether the username exists (since we assume that
+    # the user has already been authenticated), but directly inserts
+    # the username and hashed token into userTokens. Does not return
+    # any output 
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlInsertion = "INSERT INTO userTokens (username, token) VALUES (%s, %s)"
+    sqlPrepareValues = (username, auth_token_hash)
+    cursor.execute(sqlInsertion, sqlPrepareValues)
+    connection.commit()
+    connection.close()
+
+def db_check_auth_token(auth_token: str) -> str:
+    # Checks whether the provided (unhashed) authentication token 
+    # matches a hashed token in the database. If so, returns
+    # the username attached to the token. If not, returns None.
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlRetrieval = "SELECT username, token FROM userTokens"
+    cursor.execute(sqlRetrieval)
+    retrieved_pairs = cursor.fetchall()
+    for pair in retrieved_pairs:
+        if bcrypt.checkpw(auth_token.encode(), bytes(pair[1])):
+            connection.close()
+            return pair[0]
+    connection.close()
+    return None
