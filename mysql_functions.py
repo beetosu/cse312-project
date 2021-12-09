@@ -203,5 +203,17 @@ def db_retrieve_channel_messages(channel: str) -> list[tuple[str, str, str]]:
 
 def db_get_user_info(username: str) -> tuple[str, str, str, str]:
     # Retrieves a user's profile picture URL, first name, last
-    # name, and login status.
-    return None
+    # name, and login status (Online/Offline).
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlRetrieval = "SELECT (ProfilePictureUrl, FirstName, LastName, LoggedIn) FROM userData WHERE username = %s"
+    prepareUsername = (username, )
+    cursor.execute(sqlRetrieval, prepareUsername)
+    retrieved_values = cursor.fetchone()
+    returnValues = (retrieved_values[0], retrieved_values[1], retrieved_values[2], "")
+    if retrieved_values[3] == True:
+        returnValues[3] = "Online"
+    else:
+        returnValues[3] = "Offline"
+    connection.close()
+    return returnValues
