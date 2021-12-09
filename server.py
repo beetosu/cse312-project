@@ -263,8 +263,8 @@ def fix_response(reqObj, resObj):
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj
         resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(user, 'ascii'))
-        # Get PFP here
-        resObj['body'] = resObj['body'].replace(b'{{profilePicture}}', b'/pictures/default.jpg')
+        userInfo = mysql_functions.db_get_user_info(user)
+        resObj['body'] = resObj['body'].replace(b'{{profilePicture}}', bytes(userInfo[0], 'utf-8'))
     if reqObj['path'] == '/list':
         user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
         if user is None:
@@ -280,11 +280,11 @@ def fix_response(reqObj, resObj):
             if otherUser[0] != user:
                 userElement += b'<div class="contact-section">'
                 userElement += bytes(f'<li class="list__item" id={otherUser[0]}>', 'ascii')
-                userElement += bytes(f'<p class="contact-name">{otherUser[0]}</p>', 'ascii')
+                userElement += bytes(f'<a href="/profile?user={otherUser[0]}"><p class="contact-name">{otherUser[0]}</p></a>', 'ascii')
                 if otherUser[1] == "Online":
-                    userElement += bytes(f'<a href="/dm?user={otherUser[0]}"><p class="Login">{otherUser[1]}</p></a></li></div><hr>', 'ascii')
+                    userElement += bytes(f'<a class="message" href="/dm?user={otherUser[0]}"><p class="Login">{otherUser[1]}</p></a></li></div><hr>', 'ascii')
                 else:
-                    userElement += bytes(f'<a><p class="Logout">{otherUser[1]}</p></a></li></div><hr>', 'ascii')
+                    userElement += bytes(f'<a class="message"><p class="Logout">{otherUser[1]}</p></a></li></div><hr>', 'ascii')
         resObj['body'] = resObj['body'].replace(b'{{users}}', userElement)
     elif reqObj['path'] == '/dm':
         recipiant = reqObj['queries'].get('user')
@@ -319,10 +319,11 @@ def fix_response(reqObj, resObj):
         resObj['body'] = resObj['body'].replace(b'{{recipiant}}', bytes(f"{recipiant}", 'ascii'))
         resObj['body'] = resObj['body'].replace(b'{{socketName}}', bytes(f"'{channel}'", 'ascii'))
         resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(f"'{sender}'", 'ascii'))
-        history = [] # get message history here
+        history = mysql_functions.db_retrieve_channel_messages("/" + channel)
         historyElem = b''
-        for message in history:
-            pass # make each message into an html element
+        if history is not None:
+            for message in history:
+                historyElem += bytes("<b>" + message[0] + "</b>: " + message[2] + "<br/>", 'utf-8')
         resObj['body'] = resObj['body'].replace(b'{{message}}', historyElem)
     resObj["headers"]["Content-Length"] = len(resObj["body"])
     return resObj

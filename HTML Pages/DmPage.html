@@ -27,7 +27,7 @@
                 //Output on the socket to the dm pag
 
                 //Get logged in user
-                socket.send(JSON.stringify({'sender' : {{username}} ,'comment': comment}));
+                socket.send(JSON.stringify({'sender' : {{username}}, 'recipiant': '{{recipiant}}', 'comment': comment}));
 
                 //Send data to mysql database
             }

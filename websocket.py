@@ -2,6 +2,8 @@ import asyncio
 import websockets
 import json
 
+import mysql_functions
+
 '''
 A dictionary, where the keys are paths on the websocket, 
 and the values are sets of clients connected on those paths.
@@ -24,6 +26,7 @@ async def send_message(websocket, path):
                 recieverPath = path.replace(message['sender'], '')
                 if recieverPath in CONNECTIONS:
                     websockets.broadcast(CONNECTIONS[recieverPath], rawMessage)
+                mysql_functions.db_insert_message(path, message['sender'], message['recipiant'], message['comment'])
             websockets.broadcast(CONNECTIONS[path], rawMessage)
     finally:
         # Unregister user
