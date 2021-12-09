@@ -241,18 +241,6 @@ def check_password(password):
 
 def fix_response(reqObj, resObj):
     if reqObj['path'] == '/list':
-        userList = [] # get list of users here
-        userElement = b''
-        for user in userList:
-            if user['LoggedIn']: 
-                status = 'Online'
-            else:
-                status = 'Offline'
-            userElement += b'<div class="contact-section">'
-            userElement += bytes(f'<li class="list__item" id={user["username"]}>', 'ascii')
-            userElement += bytes(f'<p class="contact-name">{user["username"]}</p>', 'ascii')
-            userElement += bytes(f'<p class="Login">{status}</p></li></div><hr>', 'ascii')
-        resObj['body'] = resObj['body'].replace(b'{{users}}', userElement)
         user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
         if user is None:
             resObj['header'] = 'HTTP/1.1 403 Forbidden'
@@ -261,6 +249,18 @@ def fix_response(reqObj, resObj):
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj 
         resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(user, 'ascii'))
+        userList = mysql_functions.db_retrieve_list_of_users()
+        userElement = b''
+        for otherUser in userList:
+            if otherUser[0] != user:
+                userElement += b'<div class="contact-section">'
+                userElement += bytes(f'<li class="list__item" id={otherUser[0]}>', 'ascii')
+                userElement += bytes(f'<p class="contact-name">{otherUser[0]}</p>', 'ascii')
+                if otherUser[1] == "Online":
+                    userElement += bytes(f'<a href="/dm?user={otherUser[0]}"><p class="Login">{otherUser[1]}</p></a></li></div><hr>', 'ascii')
+                else:
+                    userElement += bytes(f'<a><p class="Logout">{otherUser[1]}</p></a></li></div><hr>', 'ascii')
+        resObj['body'] = resObj['body'].replace(b'{{users}}', userElement)
     elif reqObj['path'] == '/dm':
         recipiant = reqObj['queries'].get('user')
         if recipiant is None:
@@ -275,7 +275,7 @@ def fix_response(reqObj, resObj):
             resObj['body'] = b'user could not be found'
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj
-        sender = mysql_functions.db_check_auth_token(reqObj["headers"]["Cookie"].split("=")[-1])
+        sender = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
         if sender is None:
             resObj['header'] = 'HTTP/1.1 403 Forbidden'
             resObj['headers']['Content-Type'] = 'text/plain'
@@ -291,6 +291,7 @@ def fix_response(reqObj, resObj):
         userList = [sender, recipiant]
         userList.sort()
         channel = "".join(userList)
+        resObj['body'] = resObj['body'].replace(b'{{recipiant}}', bytes(f"{recipiant}", 'ascii'))
         resObj['body'] = resObj['body'].replace(b'{{socketName}}', bytes(f"'{channel}'", 'ascii'))
         resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(f"'{sender}'", 'ascii'))
         history = [] # get message history here
@@ -323,14 +324,9 @@ def check_request(reqObj, response):
         response["cookies"] = [{
                 "name": "token",
                 "value": token,
-                "alter": do_nothing,
                 "max-age": 86400,
-                "httpOnly": True
         }]
     return False, '', response
-
-def do_nothing(cookie, default):
-    return default
 
 server = socketserver.TCPServer(("0.0.0.0", 8000), TCPRequestHandler)
 print("server running @ http://localhost:8000")
