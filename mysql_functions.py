@@ -209,8 +209,7 @@ def db_get_user_info(username: str) -> tuple[str, str, str, str]:
     sqlRetrieval = "SELECT ProfilePictureUrl, FirstName, LastName, LoggedIn FROM userData WHERE username = %s"
     prepareUsername = (username, )
     cursor.execute(sqlRetrieval, prepareUsername)
-    retrieved_values = cursor.fetchone()
-    
+    retrieved_values = cursor.fetchone()    
     if retrieved_values[3] == True:
         returnValues = (retrieved_values[0], retrieved_values[1], retrieved_values[2], "Online")
     else:
@@ -220,4 +219,10 @@ def db_get_user_info(username: str) -> tuple[str, str, str, str]:
 
 def db_update_user_info(username: str, firstName: str, lastName: str):
     # Updates a given user's first and last name. Returns no values.
-    return None
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlUpdate = "UPDATE userData SET FirstName=%s, lastName=%s WHERE username=%s"
+    prepareValues = (firstName, lastName, username)
+    cursor.execute(sqlUpdate, prepareValues)
+    connection.commit()
+    connection.close()
