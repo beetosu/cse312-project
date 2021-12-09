@@ -217,3 +217,7 @@ def db_get_user_info(username: str) -> tuple[str, str, str, str]:
         returnValues = (retrieved_values[0], retrieved_values[1], retrieved_values[2], "Offline")
     connection.close()
     return returnValues
+
+def db_update_user_info(username: str, firstName: str, lastName: str):
+    # Updates a given user's first and last name. Returns no values.
+    return None
