@@ -21,8 +21,8 @@ a:hover,
 
 .text {
     margin: auto;
-    width: 50%;
-    padding: 10px;
+    text-align: center;
+    padding: 1rem;
   }
 
 .container{
@@ -32,7 +32,6 @@ a:hover,
     box-shadow: 0 10px 10px rgba(0, 0, 0, 0.15);
 }
 .container-return{
-    position: relative;
     background: #ffffff;
     padding: 25px 30px;
     border-radius: 10px;

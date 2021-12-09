@@ -262,8 +262,8 @@ def fix_response(reqObj, resObj):
             resObj['body'] = b'user could not be found'
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj
-        resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(user, 'ascii'))
         userInfo = mysql_functions.db_get_user_info(user)
+        resObj['body'] = resObj['body'].replace(b'{{fullName}}', bytes(userInfo[1] + ' ' + userInfo[2], 'ascii'))
         resObj['body'] = resObj['body'].replace(b'{{profilePicture}}', bytes(userInfo[0], 'utf-8'))
     if reqObj['path'] == '/list':
         user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
