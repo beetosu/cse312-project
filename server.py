@@ -292,6 +292,8 @@ def fix_response(reqObj, resObj):
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj 
         resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(user, 'ascii'))
+        userInfo = mysql_functions.db_get_user_info(user)
+        resObj['body'] = resObj['body'].replace(b'{{firstName}}', bytes(userInfo[1], 'ascii'))
         userList = mysql_functions.db_retrieve_list_of_users()
         userElement = b''
         for otherUser in userList:
