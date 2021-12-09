@@ -3,3 +3,6 @@ __pycache__
 
 pictures/*
 !pictures/default.jpg
+
+reports/*.docx
+reports/*.md
