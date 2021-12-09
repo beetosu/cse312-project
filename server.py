@@ -7,7 +7,7 @@ import bcrypt
 import hashlib
 
 
-# mysql_functions.db_init()
+mysql_functions.db_init()
 
 def preventInjection(text):
     return text.replace("&","&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -124,7 +124,7 @@ def build_response(reqObj):
         },
         "path": reqObj.get("path", '/error')
     }
-    resObj['cookies'] = response['cookies']
+    resObj['cookies'] = response.get('cookies', [])
     for k, v in response["headers"].items():
         resObj["headers"][k] = v
     
@@ -156,6 +156,14 @@ def build_response(reqObj):
 ''' 
 with open('requests.json') as f:
     valid_requests = json.load(f)
+
+for file in listdir("pictures"):
+    valid_requests["GET"][f'/pictures/{file}'] = {
+        "code": "200 OK",
+        "type": "image/jpeg",
+        "path": f'./pictures/{file}',
+        "headers": {}
+    }
 
 # The generic 404 error response object.
 not_found_response = {
@@ -240,6 +248,23 @@ def check_password(password):
 
 
 def fix_response(reqObj, resObj):
+    if reqObj['path'] == '/profile':
+        user = reqObj['queries'].get('user')
+        if user is None:
+            resObj['header'] = 'HTTP/1.1 401 Bad Request'
+            resObj['headers']['Content-Type'] = 'text/plain'
+            resObj['body'] = b'no user specificed'
+            resObj["headers"]["Content-Length"] = len(resObj["body"])
+            return resObj
+        if not mysql_functions.db_check_user_exists(user):
+            resObj['header'] = 'HTTP/1.1 401 Bad Request'
+            resObj['headers']['Content-Type'] = 'text/plain'
+            resObj['body'] = b'user could not be found'
+            resObj["headers"]["Content-Length"] = len(resObj["body"])
+            return resObj
+        resObj['body'] = resObj['body'].replace(b'{{username}}', bytes(user, 'ascii'))
+        # Get PFP here
+        resObj['body'] = resObj['body'].replace(b'{{profilePicture}}', b'/pictures/default.jpg')
     if reqObj['path'] == '/list':
         user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
         if user is None:
@@ -314,6 +339,12 @@ def check_request(reqObj, response):
             f.write(reqObj['queries']['picture'])
         if not mysql_functions.db_insert_user(reqObj['queries']['username'], bcrypt.hashpw(reqObj['queries']['password'].encode(), bcrypt.gensalt()), reqObj['queries']['FirstName'], reqObj['queries']['LastName'], f'./pictures/{reqObj["queries"]["username"]}.jpg'):
             return True, 'error occured during registration', response
+        valid_requests["GET"][f'/pictures/{reqObj["queries"]["username"]}.jpg'] = {
+            "code": "200 OK",
+            "type": "image/jpeg",
+            "path": f'./pictures/{reqObj["queries"]["username"]}.jpg',
+            "headers": {}
+        }
     elif reqObj['path'] == "/login" and reqObj['type'] == 'POST':
         validLogin = mysql_functions.db_login_user(reqObj['queries']['username'], reqObj['queries']['password'])
         if not validLogin:
