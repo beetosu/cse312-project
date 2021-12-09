@@ -382,7 +382,7 @@ def check_request(reqObj, response):
         user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
         if user is None:
             return True, "invalid auth token", response
-        # Do updating here
+        mysql_functions.db_update_user_info(user, reqObj['queries']['FirstName'], reqObj['queries']['LastName'])
     return False, '', response
 
 server = socketserver.TCPServer(("0.0.0.0", 8000), TCPRequestHandler)

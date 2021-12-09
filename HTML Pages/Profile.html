@@ -6,14 +6,16 @@
     <link rel="stylesheet" href="Profile.css">
 </head>
 
-<body>
-    <div class="container">
+<body style="flex-direction: column;">
+    <div class="container" style="margin-bottom: 1rem;">
         <img src="{{profilePicture}}" alt="Profile Picture" height="250" width="250">
         <h2 class="text">{{fullName}}</h2>     
     </div>
-    {{edit}}
-    <div class="container-return">
-        <a href="/list">Return</a>
+    <div style="display: flex;">
+        {{edit}}
+        <div class="container-return" style="margin-left: 1rem;">
+            <a href="/list">Return</a>
+        </div>
     </div>
 
 
