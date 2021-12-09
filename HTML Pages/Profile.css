@@ -37,4 +37,65 @@ a:hover,
     border-radius: 10px;
     box-shadow: 0 10px 10px rgba(0, 0, 0, 0.15);
     top: -200px;
+    text-align: center;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Righteous', cursive;
+}
+
+body{
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0e4bf1;
+}
+
+.userInfo{
+    position: relative;
+    max-width: 430px;
+    width: 100%;
+    background: #fff;
+    padding: 34px;
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+.userInfo form{
+    margin-top: 20px;
+}
+
+.userInfo form .upload{
+    height: 60px;
+    margin: 20px 0;
+}
+
+form .upload input{
+    height: 100%;
+    width: 100%;
+    outline: none;
+    padding: 0 15px;
+    font-size: 20px;
+    font-weight: 400;
+    color: #333333;
+    border: 2px solid #C7BEBE;
+    border-bottom-width: 3px;
+    border-radius: 6px;
+}
+
+form .policy{
+    display: flex;
+    align-items: center;
+}
+
+.upload.button input{
+    color: #fff;
+    letter-spacing: 1px;
+    border: none;
+    background: #0e4bf1;
+    cursor: pointer;
 }
