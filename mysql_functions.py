@@ -187,7 +187,7 @@ def db_retrieve_channel_messages(channel: str) -> list[tuple[str, str, str]]:
     # Returns None if channel contains no messages.
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
     cursor = connection.cursor()
-    sqlRetrieval = "SELECT (message, sender, recipient) FROM messageData WHERE channel = %s"
+    sqlRetrieval = "SELECT message, sender, recipient FROM messageData WHERE channel = %s"
     prepareChannel = (channel, )
     cursor.execute(sqlRetrieval, prepareChannel)
     retrieved_values = cursor.fetchall()
@@ -206,14 +206,14 @@ def db_get_user_info(username: str) -> tuple[str, str, str, str]:
     # name, and login status (Online/Offline).
     connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
     cursor = connection.cursor()
-    sqlRetrieval = "SELECT (ProfilePictureUrl, FirstName, LastName, LoggedIn) FROM userData WHERE username = %s"
+    sqlRetrieval = "SELECT ProfilePictureUrl, FirstName, LastName, LoggedIn FROM userData WHERE username = %s"
     prepareUsername = (username, )
     cursor.execute(sqlRetrieval, prepareUsername)
     retrieved_values = cursor.fetchone()
-    returnValues = (retrieved_values[0], retrieved_values[1], retrieved_values[2], "")
+    
     if retrieved_values[3] == True:
-        returnValues[3] = "Online"
+        returnValues = (retrieved_values[0], retrieved_values[1], retrieved_values[2], "Online")
     else:
-        returnValues[3] = "Offline"
+        returnValues = (retrieved_values[0], retrieved_values[1], retrieved_values[2], "Offline")
     connection.close()
     return returnValues
