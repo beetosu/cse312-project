@@ -101,7 +101,7 @@ def db_login_user(username: str, password: str) -> bool:
         sqlPrepareUsername = (username, )
         cursor.execute(sqlRetrieval, sqlPrepareUsername)
         retrieved_password = cursor.fetchone()[1]
-        if bcrypt.checkpw(password.encode(), bytes(retrieved_password, 'utf-8')):
+        if bcrypt.checkpw(password.encode(), bytes(retrieved_password)):
             sqlUpdate = "UPDATE userData SET LoggedIn = True WHERE username = %s"
             cursor.execute(sqlUpdate, sqlPrepareUsername)
             connection.commit()
@@ -137,7 +137,7 @@ def db_check_auth_token(auth_token: str) -> str:
     cursor.execute(sqlRetrieval)
     retrieved_pairs = cursor.fetchall()
     for pair in retrieved_pairs:
-        if bcrypt.checkpw(auth_token.encode(), bytes(pair[1], 'utf-8')):
+        if bcrypt.checkpw(auth_token.encode(), bytes(pair[1])):
             connection.close()
             return pair[0]
     connection.close()
@@ -184,10 +184,24 @@ def db_retrieve_channel_messages(channel: str) -> list[tuple[str, str, str]]:
     # Retrieves all messages tied to a specific channel
     # on the site. Returns a list of tuples containing their
     # sender, recipient, and the content of the message itself.
+    # Returns None if channel contains no messages.
+    connection = mysql.connector.connect(user=dbuser, password=dbpw, database=dbname, host=dbhost)
+    cursor = connection.cursor()
+    sqlRetrieval = "SELECT (message, sender, recipient) FROM messageData WHERE channel = %s"
+    prepareChannel = (channel, )
+    cursor.execute(sqlRetrieval, prepareChannel)
+    retrieved_values = cursor.fetchall()
+    if len(retrieved_values) > 0:
+        returnMessages = []
+        for value in retrieved_values:
+            valueAppend = (value[1], value[2], value[0])
+            returnMessages.append(valueAppend)
+        connection.close()
+        return returnMessages
+    connection.close()
     return None
 
-def db_retrieve_dms(sender: str, recipient: str) -> list[tuple[str, str, str]]:
-    # Retrieves a user's DMs with another specific user.
-    # Returns a tuple containing each DM's sender, recipient,
-    # and the content of each message.
+def db_get_user_info(username: str) -> tuple[str, str, str, str]:
+    # Retrieves a user's profile picture URL, first name, last
+    # name, and login status.
     return None
