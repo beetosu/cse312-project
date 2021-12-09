@@ -248,14 +248,31 @@ def check_password(password):
 
 
 def fix_response(reqObj, resObj):
-    if reqObj['path'] == '/profile':
-        user = reqObj['queries'].get('user')
+    if reqObj['path'] == '/profile/edit':
+        user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
         if user is None:
-            resObj['header'] = 'HTTP/1.1 401 Bad Request'
+            resObj['header'] = 'HTTP/1.1 403 Forbidden'
             resObj['headers']['Content-Type'] = 'text/plain'
-            resObj['body'] = b'no user specificed'
+            resObj['body'] = b'you are not logged in'
             resObj["headers"]["Content-Length"] = len(resObj["body"])
             return resObj
+        userInfo = mysql_functions.db_get_user_info(user)
+        resObj['body'] = resObj['body'].replace(b'{{fullName}}', bytes(userInfo[1] + ' ' + userInfo[2], 'ascii'))
+        resObj['body'] = resObj['body'].replace(b'{{firstName}}', bytes(userInfo[1], 'ascii'))
+        resObj['body'] = resObj['body'].replace(b'{{lastName}}', bytes(userInfo[2], 'ascii'))
+        resObj['body'] = resObj['body'].replace(b'{{profilePicture}}', bytes(userInfo[0][1:], 'utf-8'))
+    if reqObj['path'] == '/profile':
+        user = reqObj['queries'].get('user')
+        editButton = b''
+        if user is None:
+            user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
+            if user is None:
+                resObj['header'] = 'HTTP/1.1 403 Forbidden'
+                resObj['headers']['Content-Type'] = 'text/plain'
+                resObj['body'] = b'you are not logged in'
+                resObj["headers"]["Content-Length"] = len(resObj["body"])
+                return resObj
+            editButton = b'<div class="container-return"><a href="/profile/edit">Edit Profile</a></div>'
         if not mysql_functions.db_check_user_exists(user):
             resObj['header'] = 'HTTP/1.1 401 Bad Request'
             resObj['headers']['Content-Type'] = 'text/plain'
@@ -265,6 +282,7 @@ def fix_response(reqObj, resObj):
         userInfo = mysql_functions.db_get_user_info(user)
         resObj['body'] = resObj['body'].replace(b'{{fullName}}', bytes(userInfo[1] + ' ' + userInfo[2], 'ascii'))
         resObj['body'] = resObj['body'].replace(b'{{profilePicture}}', bytes(userInfo[0], 'utf-8'))
+        resObj['body'] = resObj['body'].replace(b'{{edit}}', editButton)
     if reqObj['path'] == '/list':
         user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
         if user is None:
@@ -358,6 +376,11 @@ def check_request(reqObj, response):
                 "value": token,
                 "max-age": 86400,
         }]
+    if reqObj['path'] == '/userInfo':
+        user = mysql_functions.db_check_auth_token(reqObj["headers"].get("Cookie", '').split("=")[-1])
+        if user is None:
+            return True, "invalid auth token", response
+        # Do updating here
     return False, '', response
 
 server = socketserver.TCPServer(("0.0.0.0", 8000), TCPRequestHandler)

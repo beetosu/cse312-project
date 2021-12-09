@@ -7,41 +7,13 @@
 </head>
 
 <body>
-    <div class="userInfo">
-    <h2 style="color: #0e4bf1; text-align: center">Personal Information</h2>
-    <form action="/userInfo" method="post" id="userInfo-form" enctype="multipart/form-data">
-        <input value="{{token}}" name="xsrf_token" hidden>
-        <div class="container">
-            <img src="{{profilePicture}}" alt="Profile Picture" height="250" width="250">
-            <h2 class="text">{{fullName}}</h2>
-        </div>
-        <div class="upload">
-            <label>
-                <input type="text" name="FirstName" value="{{firstName}}" placeholder="Old First Name" required>
-            </label>
-        </div>
-        <div class="upload">
-            <label>
-                <input type="text" name="LastName" value="{{lastName}}" placeholder="Old Last Name" required>
-            </label>
-        </div>
-        <div class="upload">
-            <label>
-                <input type="text" name="FirstName" placeholder="Enter New First Name" required>
-            </label>
-        </div>
-        <div class="upload">
-            <label>
-                <input type="text" name="LastName" placeholder="Enter New Last Name" required>
-            </label>
-        </div>
-        <div class="upload button">
-            <input type="Submit" value="Update">
-        </div>
-        <div class="container-return">
-            <a href="/list">Return</a>
-        </div>
-    </form>
+    <div class="container">
+        <img src="{{profilePicture}}" alt="Profile Picture" height="250" width="250">
+        <h2 class="text">{{fullName}}</h2>     
+    </div>
+    {{edit}}
+    <div class="container-return">
+        <a href="/list">Return</a>
     </div>
 
 

@@ -54,6 +54,12 @@
             "path": "./HTML Pages/Profile.html",
             "headers": {}
         },
+        "/profile/edit": {
+            "code": "200 OK",
+            "type": "text/html",
+            "path": "./HTML Pages/Edit_Profile.html",
+            "headers": {}
+        },
         "/Profile.css": {
             "code": "200 OK",
             "type": "text/css",
@@ -72,6 +78,14 @@
         },
         "/login": {
             "code": "301 Redirect",
+            "type": "text/html",
+            "body": "",
+            "headers": {
+                "location": "/list"
+            }
+        },
+        "/userInfo": {
+            "code":"301 Redirect",
             "type": "text/html",
             "body": "",
             "headers": {
